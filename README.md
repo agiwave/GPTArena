@@ -140,7 +140,7 @@ In this practice:
 1. Add a leanable bias W to represent position. The W dimension is:[l, t]. It's also $L*L$ but without batch dimension.
 2. Another softmax way on KV. This means taking K+W as weight of V.
 3. ∅(Q) is a gate to Y(element-wise mul). It was called by Q and also can be called by G(means Gate).
-4. The limitations are: W is a $L*L$ matrix and the dimension K should be the same to V.
+4. The limitations are: W is a $$ L*L $$ matrix and the dimension K should be the same to V.
 
 The AFT is a cool implementaion to keep it more simple.
 
