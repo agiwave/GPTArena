@@ -1,8 +1,9 @@
 # GPTWave
+[中文](README_zh.md)
 
-A envirenment to learn those GPTs all in theory and practice.
+A envirenment to learn those GPTs all in theory and practice. This is not a basic introduce about GPTs, I just try to summarize the key point in most of models and understanding it need some backgroud knowledges. 
 
-## A typical training result is sth like this below, Just run like this
+## A typical training result is sth like this below
 
 >>python SSM.py
 
@@ -62,7 +63,7 @@ Let's look into the previous basic algorithm of matmul, element-wise mul, bmm...
 3. bmm(A(b,i,j), B(b,j,k)) = sum( mul(A(b,i,j), B(b,j,k)), 'b,i,k') = C(b,i,k)
 4. ......
 
-So. mul and sum are the two basic algorithm of n-dimsion algorithm. And the most important point is: it is order free. Let's define: einsum = sum(mul(A,B,...)). There will be:  einsum(Q,K,V)=einsum(K,V,Q)=einsum(V,Q,K)
+So. mul and sum are the two basic algorithm of n-dimsion algorithm. And the most iimportant point is: it is order free. Let's define: einsum = sum(mul(A,B,...)). There will be:  einsum(Q,K,V)=einsum(K,V,Q)=einsum(V,Q,K)
 
 Ok, what about attention?
 
@@ -83,14 +84,14 @@ dqk -- The dimension size of Q, K(Second up dimension)
 
 Please look into this importent formula again and again.
 
-1. Attention is just seperating into two einsum, einsum(Q,K) first and einsum(softmax(QK),V) next.
+1. Attention is just seperating into two einsum, einsun(Q,K) first and einsum(softmax(QK),V) next.
 2. There are two upgrade dimension: dqk and t.
 3. t is the same size to l but means that every result is a sum of all input. This is Attention key.
 4. dqk is alwayse the same size to d in practice but means that every result C is a sum of a new generated dimension: dqk. (In fact, dqk can be diff to d).
 
 How about softmax in Attention? In fact, softmax gave us the things below:
 
-1. Benifit: Make sure the result will not be two large or two small. sum and mul Q,K first and softmax it will convert it to a weight of V.
+1. Benifit: Make sure the result will not be too large or too small. sum and mul Q,K first and softmax it will convert it to a weight of V.
 2. Weak point: einsum(Q,K) first will generate LxL matrix, that means a O(l)**2 complexcity.
 
 Another issue is: We sum all value to result, how about the diff of each position of word? Haha, in fact, we can add a learnable bias to Q and K. This is the reason we need position embedding. 
@@ -101,7 +102,7 @@ How about FFn and other Blocks? In fact, similar
 
 ## FFN and MLP
 
-A topic FFN and MLP block is like:
+A typical FFN and MLP block is like:
 
 ![alt text](docs/FFN.jpg)
 
@@ -164,7 +165,7 @@ After introducing mask matrix in Attention, the original Attention will be like:
 
 In fact, generative means introduce a mask matrix in einsum in all GPTs. We also call GPT as causal language model because the previous words are the reason of those words next.
 
-At here, we must say that attention is a cool solution to causal language model. But there are still some week point:
+At here, we must say that attention is a cool solution to causal language model. But there are still some weak point:
 
 1. Attention scope is limit to L(sentence length). We can't generate word which is out of attention scope. Attention has no memory to generate anything. That means, if we want to do this, we need enlarge the attention scope(L).
 2. After enlarging L. The complexity of training will be a big problem, because the QK matrix size is $B*L*L$. It's too heavy at here if L is too large.
@@ -196,10 +197,6 @@ Please ignore the left part in the graph. The point is:
 2. The dimention of K is dk, The dimention of V is dv. The dimention of KV is (dk,dv). Formula: KV(n) = einsum(K(n),V(n)) = einsum('dk, dv->dkv', K(n), V(n)).
 3. There is a leaning decay ration λ to S every time.
 4. And then, parallized the training:)
-
-## RWKV
-
-(Simulary to RetNet but some detail improvements in it.)
 
 ## Mamba
 
@@ -283,6 +280,6 @@ In my env, I have already implemented it by torch without CUDA kernel. So, all s
 
 ## Finally
 
-All RNN implementaion week point is: The memory will loss information gradually faster or slower. There's no one implementation can enforce the memory for now. That mean, whatever how important it is, It will be forgotten later. This is the point what i'm thinking. Is it possiable to caculate b(n) by S(n) and X(n) not only by X(n) for now?
+All RNN implementaion weak point is: The memory will loss information gradually faster or slower. There's no one implementation can enforce the memory for now. That mean, whatever how important it is, It will be forgotten later. This is the point what i'm thinking. Is it possiable to caculate b(n) by S(n) and X(n) not only by X(n) for now?
 
 Thinking .......
