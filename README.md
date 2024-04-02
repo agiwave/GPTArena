@@ -1,7 +1,7 @@
 # GPTWave
 [中文](README_zh.md)
 
-A envirenment to learn those GPTs all in theory and practice. This is not a basic introduce about GPTs, I just try to summarize the key point in most of models and understanding it need some backgroud knowledges. 
+A envirenment to learn those GPTs all in theory and practice. This is not a basic introduction about GPTs, I just try to summarize the key point in most of models and understanding it need some backgroud knowledges. 
 
 ## A typical training result is sth like this below
 
