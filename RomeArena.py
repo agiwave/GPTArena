@@ -44,7 +44,7 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
         role.persist_filename = 'data/RomeArena/'+role.name+".ckt"
 
     # -- Data loader
-    # dataset = repo.AutoDataset("bookcorpus", token='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')
+    # dataset = repo.AutoDataset("bookcorpus")
     dataset = repo.AutoDataset('text', data_dir='data/bookcorpus', split='train')
     dataloader = aka.data.TextStreamingLoader(
                     dataset, 
