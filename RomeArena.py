@@ -7,9 +7,10 @@ import aka.nn as nn
 import aka.repo as repo
 import aka.data
 
+
+repoName = 'data/pretrain'
 def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
     # -- Tokenizer --
-    repoName = 'data/pretrain'
     if tokenizer is None:
         tokenizer = repo.AutoTokenizer(repoName)
     # class Tokenizer:
@@ -44,8 +45,8 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
         role.persist_filename = 'data/RomeArena/'+role.name+".ckt"
 
     # -- Data loader
-    # dataset = repo.AutoDataset("bookcorpus")
-    dataset = repo.AutoDataset('text', data_dir='data/bookcorpus', split='train')
+    # dataset = repo.AutoDataset("data/bookcorpus")
+    dataset = repo.AutoDataset('text', data_dir=repoName, split='train')
     dataloader = aka.data.TextStreamingLoader(
                     dataset, 
                     tokenizer=tokenizer, 
@@ -79,7 +80,7 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
 def RunRoles(names, prompt, *, tokenizer=None, ):
     # -- Tokenizer --
     if tokenizer is None:
-        tokenizer = repo.AutoTokenizer('data/mamba-370m-hf')
+        tokenizer = repo.AutoTokenizer(repoName)
 
     # -- Roles --
     roles = [nn.Object(name=name) for name in names]
@@ -108,16 +109,3 @@ def RunRoles(names, prompt, *, tokenizer=None, ):
         for w in model.generator(prompt):
             print(w, end='')
         print('')
-
-if __name__ == "__main__":
-    TrainRoles([
-        # 'Gemma-20m', 
-        'RomeSet-20m',
-        # 'RomeSet-24vdim',
-        'RomeSet-Ret',
-        # 'RomeSet-32vdim',
-        # 'RomeSet-64vdim',
-        # 'RomeSet-vbdimpad',
-        # 'RomeSet-vbdim',
-        # 'RomeSet-novbdim',
-    ], lr = 6e-4, epochs=1)
