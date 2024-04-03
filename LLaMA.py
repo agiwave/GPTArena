@@ -22,7 +22,7 @@ def LLaMA(name):
             ), 
             dict(
                 name = 'MLP',
-                kv_size = 4096*4,   # ???
+                k_size = 4096*4,   # ???
                 kv_gate = True,
             )
         ]*32,

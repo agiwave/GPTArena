@@ -100,8 +100,8 @@ def RetentionArgs(name):
     )
     mlp_args = nn.Object(
         name = 'MLP',
-        qk_dim = 64,
-        kv_size = 384 * 3,
+        k_dim = 64,
+        k_size = 384 * 3,
         kv_gate = False,
     ),
     attn_args = nn.Object(
@@ -140,7 +140,7 @@ def RetNet(name):
             ), 
             nn.Object(
                 name = 'MLP',
-                kv_size = cfg['decoder_ffn_embed_dim'],
+                k_size = cfg['decoder_ffn_embed_dim'],
                 kv_gate = cfg['use_glu'],
                 activation = cfg['activation_fn']
             )

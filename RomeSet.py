@@ -4,8 +4,8 @@ import aka.numpy as np
 def RomeSetArgs(name):
     mlp_args = dict(
         name = 'MLP',
-        qk_dim = 384,
-        kv_size = 384 * 3,
+        k_dim = 384,
+        k_size = 384 * 3,
         kv_gate = False,
         RWKV_Ver = None
     )
@@ -63,13 +63,13 @@ def RomeSetArgs(name):
                 ),attn_args
             ]*(len(args['layers'])//2)
         case 'vsbase':
-            mlp_args['qk_dim'] = mlp_args['qk_dim']
+            mlp_args['k_dim'] = mlp_args['k_dim']
         case 'vsvocabFull':
             args['vocab_dim'] = args['latent_dim']
         case 'vsvocab16':
             args['vocab_dim'] = 16
-        case 'vsqk_dim':
-            mlp_args['qk_dim'] = 64
+        case 'vsk_dim':
+            mlp_args['k_dim'] = 64
         case 'vskv_gate':
             mlp_args['kv_gate'] = True
         case 'vsresident_scale':
@@ -123,7 +123,7 @@ def RomeSetArgs(name):
                 latent_dim = 512,
                 num_heads = 8,
                 num_kv_groups = 8,
-                kv_size = 512*3,
+                k_size = 512*3,
             ))
 
         case _:
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     roles = [
         # 'RomeSet-vsbase',
         # 'RomeSet-vsvocabFull',
-        # 'RomeSet-vsqk_dim',
+        # 'RomeSet-vsk_dim',
         # 'RomeSet-vskv_gate',
         # 'RomeSet-vsAFT',
         # 'RomeSet-vsHawk',

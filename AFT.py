@@ -19,11 +19,11 @@ def AFTFullBlock(**kwargs):
         latent_dim = args.latent_dim
         # -- Attention Args
         # args = args.attn_args
-        attn_qk_dim = getattr(args, 'qk_dim', latent_dim)
+        attn_k_dim = getattr(args, 'k_dim', latent_dim)
         window_size = getattr(args, 'window_size', 1024)
 
         dim = latent_dim
-        hidden_dim=attn_qk_dim
+        hidden_dim=attn_k_dim
         self.dim = dim
         self.hidden_dim = hidden_dim
         self.to_q = nn.Linear(dim, hidden_dim)
@@ -70,12 +70,12 @@ def AFTSimple(args):
         '''
         latent_dim = args.latent_dim
         # args = args.attn_args
-        attn_qk_dim = getattr(args, 'qk_dim', latent_dim)
+        attn_k_dim = getattr(args, 'k_dim', latent_dim)
         attn_window_size = getattr(args, 'window_size', 256)
 
         max_seqlen = attn_window_size
         dim = latent_dim
-        hidden_dim=attn_qk_dim
+        hidden_dim=attn_k_dim
         self.dim = dim
         self.hidden_dim = hidden_dim
         self.to_q = nn.Linear(dim, hidden_dim)
@@ -114,12 +114,12 @@ def AFTLocal(args):
         '''
         latent_dim = args.latent_dim
         # args = args.attn_args
-        attn_qk_dim = getattr(args, 'qk_dim', latent_dim)
+        attn_k_dim = getattr(args, 'k_dim', latent_dim)
         attn_window_size = getattr(args, 'window_size', 256)
 
         max_seqlen = attn_window_size
         dim = latent_dim
-        hidden_dim=attn_qk_dim
+        hidden_dim=attn_k_dim
         self.dim = dim
         self.hidden_dim = hidden_dim
         self.to_q = nn.Linear(dim, hidden_dim)

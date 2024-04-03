@@ -13,7 +13,7 @@ def AttentionBlock(**kwargs):
     Group-Query Attention
     Args:
         args.latent_dim 
-        args.attn_args.qk_dim(Optional, default: latent_dim)
+        args.attn_args.k_dim(Optional, default: latent_dim)
 
     Examples:
         default ==> Attention
@@ -29,23 +29,23 @@ def AttentionBlock(**kwargs):
 
         # -- Attention Args
         # args = args.attn_args
-        attn_qk_dim = getattr(args, 'qk_dim', latent_dim)
+        attn_k_dim = getattr(args, 'k_dim', latent_dim)
         attn_hidden_dim = getattr(args, 'hidden_dim', latent_dim)
         attn_heads = getattr(args, 'num_heads', 1)
         attn_kv_groups = getattr(args, 'num_kv_groups', attn_heads)
-        attn_head_dim = attn_qk_dim//attn_heads
+        attn_head_dim = attn_k_dim//attn_heads
         k_dim = attn_head_dim * attn_kv_groups
         v_dim = attn_hidden_dim//attn_heads * attn_kv_groups
-        assert attn_head_dim * attn_heads == attn_qk_dim
+        assert attn_head_dim * attn_heads == attn_k_dim
         assert attn_heads % attn_kv_groups == 0
         assert attn_hidden_dim % attn_heads == 0
-        self.in_proj = nn.Linear(latent_dim, attn_qk_dim + k_dim + v_dim, bias=bias)
+        self.in_proj = nn.Linear(latent_dim, attn_k_dim + k_dim + v_dim, bias=bias)
         self.out_proj = nn.Linear(attn_hidden_dim, latent_dim, bias=bias)
         self.attn_dropout = nn.Dropout(dropout)
         self.resid_dropout = nn.Dropout(dropout)
         self.window_size = getattr(args, 'window_size', None)
         self.hidden_dim = attn_hidden_dim
-        self.attn_qk_dim = attn_qk_dim
+        self.attn_k_dim = attn_k_dim
         self.attn_k_dim = k_dim
         self.attn_v_dim = v_dim
         self.attn_heads = attn_heads
@@ -91,7 +91,7 @@ def AttentionBlock(**kwargs):
 
         # -- qkv --
         attn_heads, attn_kv_groups = self.attn_heads, self.attn_kv_groups
-        q, k, v  = self.in_proj(x).split([self.attn_qk_dim, self.attn_k_dim, self.attn_v_dim], dim=2)
+        q, k, v  = self.in_proj(x).split([self.attn_k_dim, self.attn_k_dim, self.attn_v_dim], dim=2)
         q = q.view(B, L, attn_heads, -1)
         k = k.view(B, L, attn_kv_groups, -1)
         v = v.view(B, L, attn_kv_groups, -1)
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         latent_dim = 384,
         window_size = 128,
         hidden_dim = 256,
-        qk_dim = 384,
+        k_dim = 384,
         num_heads = 8,
         num_kv_groups = 2
     )

@@ -9,8 +9,9 @@ import aka.data
 
 def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
     # -- Tokenizer --
+    repoName = 'data/pretrain'
     if tokenizer is None:
-        tokenizer = repo.AutoTokenizer('data/tokenizer')
+        tokenizer = repo.AutoTokenizer(repoName)
     # class Tokenizer:
     #     def __init__(self, path):
     #         from sentencepiece import SentencePieceProcessor
@@ -43,7 +44,8 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
         role.persist_filename = 'data/RomeArena/'+role.name+".ckt"
 
     # -- Data loader
-    dataset = repo.AutoDataset('text', data_dir='data/text', split='train')
+    # dataset = repo.AutoDataset("bookcorpus", token='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')
+    dataset = repo.AutoDataset('text', data_dir='data/bookcorpus', split='train')
     dataloader = aka.data.TextStreamingLoader(
                     dataset, 
                     tokenizer=tokenizer, 
@@ -61,6 +63,7 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
             optimizer_kwargs={'lr':lr},
             forward_kwargs={'state':{}},
             persist_filename = role.persist_filename,
+            persist_per_batchs = 50,
             epochs=epochs)
 
     # -- Plot --
