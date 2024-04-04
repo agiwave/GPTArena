@@ -22,7 +22,7 @@ def GemmaArgs(name):
 
     mlp_args = dict(
         name = "MLP",
-        k_size= 0,
+        k_size = 0,
         kv_gate = True,
     )
     attn_args = dict(
@@ -46,30 +46,30 @@ def GemmaArgs(name):
             args['latent_dim'] = 2048
             attn_args['num_heads'] = 8
             attn_args['num_kv_groups'] = 1
-            mlp_args.k_size= 16384
+            mlp_args['k_size'] = 16384
             args['layers'] = [attn_args, mlp_args]*18
         case '8b':
             n_layers = 28
             args['latent_dim'] = 3072
             attn_args['num_heads'] = 16
             attn_args['num_kv_groups'] = 16
-            attn_args['k_size']
+            mlp_args['k_size'] = 24576
             args['layers'] = [attn_args, mlp_args]*28
         case '20m':
             n_layers = 10
             args['latent_dim'] = 384
             attn_args['num_heads'] = 6
             attn_args['num_kv_groups'] = 6
-            attn_args.window_size = 256
-            mlp_args.k_size= 1024
+            attn_args['window_size'] = 256
+            mlp_args['k_size'] = 1024
             args['layers'] = [attn_args, mlp_args]*10
         case '70m':
             n_layers = 20
             args['latent_dim'] = 512
             attn_args['num_heads'] = 8
             attn_args['num_kv_groups'] = 8
-            attn_args.window_size = 256
-            mlp_args.k_size= 512*3
+            attn_args['window_size'] = 256
+            mlp_args['k_size'] = 512*3
             args['layers'] = [attn_args, mlp_args]*20
         case _:
             assert False, f"Unknown Gemma name{name}"

@@ -37,15 +37,19 @@ def CausalLM(**kwargs):
     '''
     def __init__(self, **kwargs):
         args = nn.Object(**kwargs)
-        in_proj, out_proj = None, None
-        vocab_dim = getattr(args, 'vocab_dim', args.latent_dim)
-        if vocab_dim != args.latent_dim:
-            in_proj = nn.Linear(vocab_dim, args.latent_dim, bias=args.bias)
-            out_proj = nn.Linear(args.latent_dim, vocab_dim, bias=args.bias)
+        self.tokenizer = args.tokenizer
+        self.latent_dim = args.latent_dim
+        self.vocab_dim = getattr(args, 'vocab_dim', args.latent_dim)
+        self.train_mode = getattr(args, 'train_mode', None)
+        self.in_proj = None if self.vocab_dim == self.latent_dim else nn.Linear(self.vocab_dim, self.latent_dim, bias=args.bias)
+        self.out_proj = None if self.vocab_dim == self.latent_dim else nn.Linear(self.latent_dim, self.vocab_dim, bias=args.bias)
+        self.pad_x = getattr(args, 'pad_x', False)
+        self.embedding_scale = (None if not getattr(args,'embedding_scale',False) else math.sqrt(vocab_dim))
+        self.embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.vocab_dim)
 
-        pad_x = getattr(args, 'pad_x', False)
-        lm_head = getattr(args, 'lm_head', False)
         make_layer = MetaLayer if not hasattr(args, 'MetaLayer') else args.MetaLayer
+        self.layers = nn.ModuleList([make_layer(**dict(layer,**kwargs)) for layer in args.layers])
+        self.lm_head = None if not getattr(args, 'lm_head', False) else nn.Linear(self.vocab_dim, args.vocab_size,bias=False)
 
         prev_norm = getattr(args, 'prev_norm', None)
         if prev_norm is not None:
@@ -55,18 +59,6 @@ def CausalLM(**kwargs):
                     prev_norm = GemmaEmbNorm()
                 case _:
                     prev_norm = nn.RMSNorm(args.latent_dim)
-
-        embedding_scale = getattr(args,'embedding_scale',False)
-        self.tokenizer = args.tokenizer
-        self.vocab_dim = vocab_dim
-        self.latent_dim = args.latent_dim
-        self.pad_x = pad_x
-        self.embedding_scale = (None if not embedding_scale else math.sqrt(vocab_dim))
-        self.embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=vocab_dim)
-        self.layers = nn.ModuleList([make_layer(**dict(layer,**kwargs)) for layer in args.layers])
-        self.in_proj = in_proj
-        self.out_proj = out_proj
-        self.lm_head = None if not lm_head else nn.Linear(vocab_dim, args.vocab_size,bias=False)
         self.prev_norm = prev_norm
         self.post_norm = nn.RMSNorm(self.vocab_dim)
         self.cache = {}
@@ -82,6 +74,7 @@ def CausalLM(**kwargs):
                 x = np.pad(x, (self.latent_dim-self.vocab_dim,0), mode='constant', value=float(0.0))
             else:
                 x = self.in_proj(x)
+
         if self.embedding_scale is not None:    # RetNet, nonsense :(. 
             x = x * self.embedding_scale
 
@@ -101,7 +94,6 @@ def CausalLM(**kwargs):
             if loss is not None:
                 layer_losses.append(loss)
 
-
         # -- latent_dim --> vocab_dim
         if self.vocab_dim != self.latent_dim:
             if self.pad_x:
@@ -120,12 +112,12 @@ def CausalLM(**kwargs):
 
         # -- logits --> output
         if(targets is not None):
-            loss = np.cross_entropy(y.view(-1, y.size(-1)), targets.reshape(-1), ignore_index=-1)
-            # vocab_max = np.max(self.embedding.weight, dim=1)[0]-1.
-            # vocab_min = np.min(self.embedding.weight, dim=1)[0]
-            # loss += np.mean(vocab_max**2)+np.mean(vocab_min**2)
-            if len(layer_losses) > 0:
-                loss += np.sum(np.stack(layer_losses, dim=-1)) / len(layer_losses)
+            if self.train_mode is None:
+                loss = np.cross_entropy(y.view(-1, y.size(-1)), targets.reshape(-1), ignore_index=-1)
+                if len(layer_losses) > 0:
+                    loss += np.sum(np.stack(layer_losses, dim=-1)) / len(layer_losses)
+            else:
+                assert False
             return y, loss
         else:
             return y

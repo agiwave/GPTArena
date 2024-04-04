@@ -78,7 +78,7 @@ def HawkBlock(**kwargs):
                 x[:,begin:end] = np.einsum('blmhd,bmhd->blhd', cumA, shiftB) + truncX
                 gru_state = x[:,end-1:end]
                 begin = end
-        elif False: # Approximate version and faster. May cause vanishing gradient
+        elif False: # Approximate version and faster. May cause gradient vanishing
             cumA = np.exp(np.cumsum(rg, dim=1))
             shiftA = np.pad(cumA, (0, 0, 0, 0, 1, -1), value=1.0)
             shiftB = np.cat([gru_state, x[:,:l-1]], dim=1) / (1e-10+shiftA)
@@ -132,6 +132,16 @@ def HawkArgs(name):
                 layers = [dict(
                     name = 'Hawk',
                     num_heads = 8
+                )]*48,
+            )
+        case 'Hawk100m':
+            args['latent_dim'] = 768
+            args['vocab_dim'] = 64
+            return dict(
+                args,
+                layers = [dict(
+                    name = 'Hawk',
+                    num_heads = 16
                 )]*48,
             )
         case 'Griffin':
@@ -191,8 +201,9 @@ if __name__ == "__main__":
         # 'Hawk-Mamba',
         # 'Hawk-Griffin',
         # 'Hawk-RWKV',
-        'Hawk-HawkOnly',
+        # 'Hawk-HawkOnly',
+        'Hawk-Hawk100m',
         # 'Hawk-SSMOnly',
     ]
-    TrainRoles(roles, lr = 6e-3, epochs=10)
-    # RunRoles(roles, 'My lord Sebastian')
+    TrainRoles(roles, repo_name='data/bookcorpus', save_dir='data/RomeArena', lr = 6e-3, epochs=1)
+    # RunRoles(roles, 'My lord Sebastian', repo_name='data/bookcorpus', save_dir='data/RomeArena')

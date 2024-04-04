@@ -7,12 +7,10 @@ import aka.nn as nn
 import aka.repo as repo
 import aka.data
 
-
-repoName = 'data/pretrain'
-def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
+def TrainRoles(roles, *, repo_name='data/pretrain', save_dir='data/RomeArena', tokenizer=None, lr=1.e-4, epochs=1):
     # -- Tokenizer --
     if tokenizer is None:
-        tokenizer = repo.AutoTokenizer(repoName)
+        tokenizer = repo.AutoTokenizer(repo_name)
     # class Tokenizer:
     #     def __init__(self, path):
     #         from sentencepiece import SentencePieceProcessor
@@ -24,7 +22,9 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
     #     def decode(self, s):
     #         return self.tokenizer.decode(s)
     # vocab_size = 256000
-    
+    vocab_size = tokenizer.vocab_size
+    vocab_size += 0 if not hasattr(tokenizer, 'added_tokens_decoder') else len(tokenizer.added_tokens_decoder)
+    vocab_size += 0 if not hasattr(tokenizer, 'added_tokens_encoder') else len(tokenizer.added_tokens_encoder)
     # -- Roles --
     roles = [nn.Object(name=name) for name in roles]
     import importlib
@@ -34,7 +34,7 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
         args = getattr(module, module_name+'Args')(sub_name)
         args.update(dict(
             tokenizer = tokenizer,
-            vocab_size = 50304,
+            vocab_size = vocab_size,
             dropout = 0.1,
             bias = False
         ))
@@ -42,11 +42,10 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
             args['vocab_dim'] = 64
 
         role.args = args
-        role.persist_filename = 'data/RomeArena/'+role.name+".ckt"
+        role.persist_filename = f"{save_dir}/{role.name}.ckt"
 
     # -- Data loader
-    # dataset = repo.AutoDataset("data/bookcorpus")
-    dataset = repo.AutoDataset('text', data_dir=repoName, split='train')
+    dataset = repo.AutoDataset('text', data_dir=repo_name, split='train')
     dataloader = aka.data.TextStreamingLoader(
                     dataset, 
                     tokenizer=tokenizer, 
@@ -77,10 +76,14 @@ def TrainRoles(roles, *, tokenizer=None, lr=1.e-4, epochs=1):
     plt.legend([r.name for r in roles], loc='upper right')
     plt.show()
 
-def RunRoles(names, prompt, *, tokenizer=None, ):
+def RunRoles(names, prompt, *, repo_name='data/bookcorpus', save_dir='data/RomeArena', tokenizer=None):
     # -- Tokenizer --
     if tokenizer is None:
-        tokenizer = repo.AutoTokenizer(repoName)
+        tokenizer = repo.AutoTokenizer(repo_name)
+
+    vocab_size = tokenizer.vocab_size
+    vocab_size += 0 if not hasattr(tokenizer, 'added_tokens_decoder') else len(tokenizer.added_tokens_decoder)
+    vocab_size += 0 if not hasattr(tokenizer, 'added_tokens_encoder') else len(tokenizer.added_tokens_encoder)
 
     # -- Roles --
     roles = [nn.Object(name=name) for name in names]
@@ -91,14 +94,14 @@ def RunRoles(names, prompt, *, tokenizer=None, ):
         args = getattr(module, module_name+'Args')(sub_name)
         args.update(dict(
             tokenizer = tokenizer,
-            vocab_size = 50304,
+            vocab_size = vocab_size,
             dropout = 0.1,
             bias = False
         ))
         if not 'vocab_dim' in args:
             args['vocab_dim'] = 64
         role.args = args
-        role.persist_filename = 'data/RomeArena/'+role.name+".ckt"
+        role.persist_filename = f"{save_dir}/{role.name}.ckt"
 
     # -- Run --
     for role in roles:
@@ -109,3 +112,16 @@ def RunRoles(names, prompt, *, tokenizer=None, ):
         for w in model.generator(prompt):
             print(w, end='')
         print('')
+
+if __name__ == "__main__":
+    TrainRoles([
+        # 'Gemma-20m', 
+        'RomeSet-20m',
+        # 'RomeSet-24vdim',
+        'RomeSet-Ret',
+        # 'RomeSet-32vdim',
+        # 'RomeSet-64vdim',
+        # 'RomeSet-vbdimpad',
+        # 'RomeSet-vbdim',
+        # 'RomeSet-novbdim',
+    ], lr = 6e-4, epochs=1)
